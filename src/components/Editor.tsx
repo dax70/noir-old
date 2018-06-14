@@ -1,34 +1,14 @@
 import * as React from 'react';
-import { LinkedList, List } from '../lib';
+import { List } from '../lib';
 import { TextNode } from '../objects/TextNodes';
 
-const line: List<TextNode> = new LinkedList<TextNode>();
-line.add({
-  index: 0,
-  kind: 'word',
-  length: 5,
-  value: 'Hello'
-});
-line.add({
-  index: 6,
-  kind: 'space',
-  length: 1,
-  value: ''
-});
-line.add({
-  index: 6,
-  kind: 'word',
-  length: 1,
-  value: 'World'
-});
-
 export type Props = {
-  //
+  line?: List<TextNode>
 };
 
 export class Editor extends React.Component<Props, {}> {
 
-  buildChild(textNode: TextNode, key: number) {
+  buildTextNode(textNode: TextNode, key: number) {
     switch (textNode.kind) {
       case 'word':
         return (<span key={key}>{textNode.value}</span>);
@@ -42,16 +22,22 @@ export class Editor extends React.Component<Props, {}> {
   render() {
     const spans = [];
     let key = 1;
-    const iterator = line[Symbol.iterator]();
-    let result = iterator.next();
-    while (!result.done) {
-      if (result && result.value) {
-        const textNode = result.value;
-        spans.push(this.buildChild(textNode, key));
-      }
+    const { line } = this.props;
 
-      result = iterator.next();
-      key ++;
+    if (line) {
+      // manual iterator due to Typescript downlevel
+      const iterator = line[Symbol.iterator]();
+      let result = iterator.next();
+
+      while (!result.done) {
+        if (result && result.value) {
+          const textNode = result.value;
+          spans.push(this.buildTextNode(textNode, key));
+        }
+
+        result = iterator.next();
+        key ++;
+      }
     }
 
     return (

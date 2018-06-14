@@ -1,14 +1,18 @@
 import { Iterable, Iterator , IteratorResult } from './Iterable';
 
-/* Doubly LinkedList */
-export type LinkedNode<T> = {
-    value: T;
-    previous?: LinkedNode<T>;
-    next?: LinkedNode<T>;
-};
-
 const message = {
   failure: 'Failure: non-existent node in this list.'
+};
+
+/* Doubly LinkedList */
+export type LinkedNode<T> = {
+  value: T;
+  previous?: LinkedNode<T>;
+  next?: LinkedNode<T>;
+};
+
+export type Dictionary<T>  = {
+  [key: string]: T;
 };
 
 export type List<T> = Iterable<T> & {
@@ -74,6 +78,17 @@ export class LinkedList<T> implements List<T>, Iterable<T> {
       return node;
     }
 
+    // addFirst(value) {
+    //   let newNode = new Node(value);
+    //   this.first = newNode;
+    // }
+    // addAfter(newValue, beforeValue) {
+    //   let newNode = new Node(newValue);
+    //   let beforeNode = this.find(beforeValue);
+    //   newNode.next = beforeNode.next;
+    //   beforeNode.next = newNode;
+    // }
+
     find(position: number) {
       let count = 1;
       // tslint:disable-next-line:prefer-const
@@ -92,6 +107,26 @@ export class LinkedList<T> implements List<T>, Iterable<T> {
 
       return currentNode;
     }
+
+    // find(position: number) : LinkedNode<T>;
+    // find(value: T): LinkedNode<T>;
+    // find(param: any) {
+
+    //   if (param && typeof param === 'number') {
+    //     //
+    //   }
+    //   else if(param instanceof T) {
+    //     //
+    //   }
+
+    //   let node = this.head;
+
+    //   while (node && node.value !== param) {
+    //     node = node.next;
+    //   }
+
+    //   return node;
+    // }
 
     remove(position: number) {
       this._length--;
