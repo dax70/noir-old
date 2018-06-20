@@ -1,7 +1,7 @@
 import { Iterable, Iterator , IteratorResult } from './Iterable';
 
 const message = {
-  failure: 'Failure: non-existent node in this list.'
+  outOfRange: 'The position is greater than the length of the list.'
 };
 
 /* Doubly LinkedList */
@@ -20,6 +20,15 @@ export type List<T> = Iterable<T> & {
 
   add(item: T): void;
 
+  get(index: number) : T | null;
+
+  find(value: number | T): any;
+
+  removeAt(position: number): void;
+
+  first(): T | null;
+
+  last(): T | null;
 }
 
 export class LinkedList<T> implements List<T>, Iterable<T> {
@@ -58,10 +67,9 @@ export class LinkedList<T> implements List<T>, Iterable<T> {
         return new LinkedListIterator<T>(this.head);
     }
 
-    add(value: T) {
-      const node: LinkedNode<T> = { value };
+    add(value: T): LinkedNode<T> {
       const { tail, _length} = this;
-
+      const node: LinkedNode<T> = { value };
       if (_length && tail) {
         // append at end
         tail.next = node;
@@ -78,6 +86,24 @@ export class LinkedList<T> implements List<T>, Iterable<T> {
       return node;
     }
 
+    first() {
+      const { head } = this;
+      if(head) {
+        return head.value;
+      }
+
+      return null;
+    }
+
+    last() {
+      const { tail } = this;
+      if(tail) {
+        return tail.value;
+      }
+
+      return null;
+    }
+
     // addFirst(value) {
     //   let newNode = new Node(value);
     //   this.first = newNode;
@@ -89,14 +115,14 @@ export class LinkedList<T> implements List<T>, Iterable<T> {
     //   beforeNode.next = newNode;
     // }
 
-    find(position: number) {
+    findAt(position: number) {
       let count = 1;
       // tslint:disable-next-line:prefer-const
       let { head: currentNode, _length } = this;
 
       // 1st use-case: an invalid position
       if (_length === 0 || position < 1 || position > _length) {
-          throw new Error(message.failure);
+          throw new Error(message.outOfRange);
       }
 
       // 2nd use-case: a valid position
@@ -106,6 +132,31 @@ export class LinkedList<T> implements List<T>, Iterable<T> {
       }
 
       return currentNode;
+    }
+
+    findNode(node: LinkedNode<T>) {
+      if (!node) {
+        return null;
+      }
+
+      let currentNode = this.head;
+
+      while (currentNode && currentNode.value !== node.value) {
+          currentNode = currentNode.next;
+      }
+
+      return currentNode;
+    }
+
+    find(position: number): any;
+    find(node: LinkedNode<T>): any;
+    find(value: number | LinkedNode<T>): any {
+      if (typeof value === 'number') {
+        this.findAt(value);
+      }
+      else {
+        this.findNode(value)
+      }
     }
 
     // find(position: number) : LinkedNode<T>;
@@ -128,8 +179,42 @@ export class LinkedList<T> implements List<T>, Iterable<T> {
     //   return node;
     // }
 
-    remove(position: number) {
-      this._length--;
+    remove(node: LinkedNode<T>) {
+      let { head, tail } = this;
+
+      if(node) {
+        // bind node after to prevs
+        const { next, previous } = node;
+
+        if(previous) {
+          previous.next = next;
+        }
+
+        if(next) {
+          next.previous = previous;
+        }
+
+        if(head === node) {
+          head = node.next;
+        }
+
+        if(tail === node) {
+          tail = node.previous;
+        }
+
+        delete node.next;
+        delete node.previous;
+        delete node.value;
+
+        this._length--;
+      }
+    }
+
+    removeAt(position: number) {
+      const node = this.find(position);
+      if(node) {
+        this.remove(node);
+      }
     }
 
 }

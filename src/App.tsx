@@ -6,17 +6,18 @@ import logo from './logo.svg';
 import { BDoc, Editor } from './components'
 
 import { LinkedList, List } from './lib';
-import { TextNode } from './objects/TextNodes';
+import { Line, TextNode } from './objects/TextNodes';
 import { sample } from './sample';
 
 const doc = JSON.parse(sample);
 
-
 type EditorState = {
-  line?: List<TextNode>
+  line: Line
 }
 
-const editorInitialState: EditorState = {};
+const userEditorState: EditorState = {
+  line: new Line()
+};
 
 export type Subscription = () => void;
 
@@ -26,7 +27,7 @@ let observer: EditorObserver | null;
 
 function emitChange() {
   if (observer) {
-    observer(editorInitialState);
+    observer(userEditorState);
   }
 }
 
@@ -70,13 +71,53 @@ function insertBreakAtPoint(e: { clientX: number; clientY: number; }) {
   textNode.parentNode.insertBefore(br, replacement);
 }
 
+const handleInput = (charCode: number) => {
+  const letter = String.fromCharCode(charCode);
+  // tslint:disable-next-line:no-console
+  console.log(letter);
+  const line = userEditorState.line;
+  if(line.current) {
+    const word = line.current;
+    word.value += letter;
+    word.length += letter.length;
+  } else {
+    line.addWord(letter);
+  }
+}
+
 window.onload =  ()=> {
   // subscribe to key presses
   document.onkeypress = (e: KeyboardEvent) => {
-    // tslint:disable-next-line:no-console
-    console.log(String.fromCharCode(e.charCode));
+
+    handleInput(e.charCode);
+
     emitChange();
   };
+
+  document.onkeydown = (e: KeyboardEvent) => {
+    const { which } = e;
+
+    if(which === 8) {
+      // tslint:disable-next-line:no-console
+      console.log('backspace');
+      const line = userEditorState.line;
+      if(line.current) {
+        const node = line.current;
+        if(node.length > 1) {
+          // remove the last from value
+          const { value  } = node;
+          node.value = value.slice(0, -1);
+          node.length--;
+        }
+        else {
+          // remove the node itself (single)
+          line.remove(node)
+        }
+      }
+
+      emitChange();
+    }
+  }
 
   // subscribe to clicks
   const spans = document.getElementsByTagName("span");
@@ -86,20 +127,20 @@ window.onload =  ()=> {
   }
 };
 
-const line: List<TextNode> = new LinkedList<TextNode>();
-line.add({
+const sampleLine: List<TextNode> = new LinkedList<TextNode>();
+sampleLine.add({
   index: 0,
   kind: 'word',
   length: 5,
   value: 'Hello'
 });
-line.add({
+sampleLine.add({
   index: 6,
   kind: 'space',
   length: 1,
   value: ''
 });
-line.add({
+sampleLine.add({
   index: 6,
   kind: 'word',
   length: 1,
@@ -107,10 +148,10 @@ line.add({
 });
 
 type AppProps = {
-  line?: List<TextNode>
+  line?: Line
 }
 
-class App extends React.Component<AppProps, {}> {
+class App extends React.Component<AppProps, AppProps> {
   constructor(props: AppProps) {
     super(props);
     this.state = { line: props.line };
@@ -125,6 +166,7 @@ class App extends React.Component<AppProps, {}> {
   }
 
   public render() {
+    const { line } = this.state;
     return (
       <div className="App">
         <header className="App-header">
@@ -133,8 +175,8 @@ class App extends React.Component<AppProps, {}> {
         </header>
         <div>
           <BDoc key={1} data = {doc}/>
-          <Editor key={2} line={line}/>
-          <Editor key={3} />
+          {/* <Editor key={2} line={sampleLine}/> */}
+          <Editor key={3} line={line}/>
         </div>
       </div>
     );

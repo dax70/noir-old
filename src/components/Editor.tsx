@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { List } from '../lib';
-import { TextNode } from '../objects/TextNodes';
+import { Line, TextNode } from '../objects/TextNodes';
 
 export type Props = {
-  line?: List<TextNode>
+  line?: Line
 };
 
 export class Editor extends React.Component<Props, {}> {
@@ -20,24 +19,13 @@ export class Editor extends React.Component<Props, {}> {
   }
 
   render() {
-    const spans = [];
-    let key = 1;
+    const spans: Array<JSX.Element| '\u00a0' | null> = [];
     const { line } = this.props;
 
     if (line) {
-      // manual iterator due to Typescript downlevel
-      const iterator = line[Symbol.iterator]();
-      let result = iterator.next();
-
-      while (!result.done) {
-        if (result && result.value) {
-          const textNode = result.value;
+      line.forEach((textNode, key) => {
           spans.push(this.buildTextNode(textNode, key));
-        }
-
-        result = iterator.next();
-        key ++;
-      }
+      });
     }
 
     return (
