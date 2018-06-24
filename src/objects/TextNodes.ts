@@ -1,14 +1,14 @@
 import { LinkedList } from "../lib";
-import { LinkedNode } from "../lib/LinkedList";
 
 type Kind = 'word' | 'symbol' | 'space';
 
-type TextNode  = {
+type TextNode = {
   index: number
   length: number
   kind: Kind
   value: string,
-  link?: LinkedNode<TextNode>
+  previous?: TextNode;
+  next?: TextNode;
 }
 
 class TextParser {
@@ -31,8 +31,7 @@ class Line {
       length: word.length,
       value: word
     };
-    // bind link to node
-    node.link = this.line.add(node);
+    this.line.add(node);
   }
 
   addSpace() {
@@ -63,7 +62,7 @@ class Line {
       while (!result.done) {
         if (result && result.value) {
           const textNode = result.value;
-          func(textNode, index);
+          func(textNode as TextNode, index);
         }
 
         result = iterator.next();
@@ -72,12 +71,9 @@ class Line {
   }
 
   remove(node: TextNode) {
-    const { line } = this;
-    const { link } = node;
+    if(!node) { throw new Error('Can not remove non-existant node!')}
 
-    if(!link) { throw new Error('Can not remove non-existant node!')}
-
-    line.remove(link);
+    this.line.remove(node);
   }
 }
 

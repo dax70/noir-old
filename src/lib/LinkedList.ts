@@ -6,9 +6,8 @@ const message = {
 
 /* Doubly LinkedList */
 export type LinkedNode<T> = {
-  value: T;
-  previous?: LinkedNode<T>;
-  next?: LinkedNode<T>;
+  previous?: T;
+  next?: T;
 };
 
 export type Dictionary<T>  = {
@@ -31,11 +30,11 @@ export type List<T> = Iterable<T> & {
   last(): T | null;
 }
 
-export class LinkedList<T> implements List<T>, Iterable<T> {
+export class LinkedList<T extends LinkedNode<T>> implements Iterable<T> {
     // tslint:disable-next-line:variable-name
     _length = 0;
-    head?: LinkedNode<T>;
-    tail?: LinkedNode<T>;
+    head?: T;
+    tail?: T;
 
     constructor() {
       //
@@ -53,7 +52,7 @@ export class LinkedList<T> implements List<T>, Iterable<T> {
       }
 
       if (element) {
-        return element.value;
+        return element;
       }
 
       return null;
@@ -67,9 +66,8 @@ export class LinkedList<T> implements List<T>, Iterable<T> {
         return new LinkedListIterator<T>(this.head);
     }
 
-    add(value: T): LinkedNode<T> {
+    add(node: T){
       const { tail, _length} = this;
-      const node: LinkedNode<T> = { value };
       if (_length && tail) {
         // append at end
         tail.next = node;
@@ -83,13 +81,12 @@ export class LinkedList<T> implements List<T>, Iterable<T> {
       }
 
       this._length++;
-      return node;
     }
 
     first() {
       const { head } = this;
       if(head) {
-        return head.value;
+        return head;
       }
 
       return null;
@@ -98,7 +95,7 @@ export class LinkedList<T> implements List<T>, Iterable<T> {
     last() {
       const { tail } = this;
       if(tail) {
-        return tail.value;
+        return tail;
       }
 
       return null;
@@ -134,23 +131,21 @@ export class LinkedList<T> implements List<T>, Iterable<T> {
       return currentNode;
     }
 
-    findNode(node: LinkedNode<T>) {
+    findNode(node: T) {
       if (!node) {
         return null;
       }
 
       let currentNode = this.head;
 
-      while (currentNode && currentNode.value !== node.value) {
+      while (currentNode && currentNode !== node) {
           currentNode = currentNode.next;
       }
 
       return currentNode;
     }
 
-    find(position: number): any;
-    find(node: LinkedNode<T>): any;
-    find(value: number | LinkedNode<T>): any {
+    find(value: number | T): any {
       if (typeof value === 'number') {
         this.findAt(value);
       }
@@ -204,7 +199,6 @@ export class LinkedList<T> implements List<T>, Iterable<T> {
 
         delete node.next;
         delete node.previous;
-        delete node.value;
 
         this._length--;
       }
@@ -219,10 +213,10 @@ export class LinkedList<T> implements List<T>, Iterable<T> {
 
 }
 
-class LinkedListIterator<T> implements Iterator<T> {
-    linkedNode?: LinkedNode<T>;
+class LinkedListIterator<T extends LinkedNode<T>> implements Iterator<T> {
+    linkedNode?: T;
 
-    constructor (linkedNode?: LinkedNode<T>) {
+    constructor (linkedNode?: T) {
         this.linkedNode = linkedNode;
     }
 
@@ -231,7 +225,7 @@ class LinkedListIterator<T> implements Iterator<T> {
 
       if (node) {
         this.linkedNode = node.next;
-        return { value: node.value, done: false };
+        return { value: node, done: false };
       }
       return { done: true };
     }
