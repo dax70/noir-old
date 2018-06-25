@@ -175,33 +175,56 @@ export class LinkedList<T extends LinkedNode<T>> implements Iterable<T> {
     // }
 
     remove(node: LinkedNode<T>) {
-      let { head, tail } = this;
-
-      if(node) {
-        // bind node after to prevs
-        const { next, previous } = node;
-
-        if(previous) {
-          previous.next = next;
-        }
-
-        if(next) {
-          next.previous = previous;
-        }
-
-        if(head === node) {
-          head = node.next;
-        }
-
-        if(tail === node) {
-          tail = node.previous;
-        }
-
-        delete node.next;
-        delete node.previous;
-
-        this._length--;
+      if (!node) {
+        throw new Error('Can not remove Node of null or undefined');
       }
+
+      const { head, tail } = this;
+      // bind node after to prevs
+      const { next, previous } = node;
+
+      // only one node?
+      if (node === head && node === tail) {
+        delete this.head;
+        delete this.tail;
+      }
+      // if node to be removed is head
+      else if (node === head) {
+        const candidate = node.next;
+        if (candidate && candidate.previous) {
+          // this is now head - remove any dangling to previous
+          delete candidate.previous;
+        }
+
+        this.head = candidate;
+      }
+      // if node to be removed is tail
+      else if(node === tail) {
+        const candidate = node.previous;
+        if (candidate && candidate.next) {
+          // this is now tail - remove dangling to next
+          delete candidate.next;
+        }
+
+        this.tail = candidate;
+      }
+      else {
+        if (!previous) {
+          throw new Error('There should always be a previous');
+        }
+
+        if (!next) {
+          throw new Error('There should always be a next');
+        }
+
+        previous.next = next;
+        next.previous = previous;
+      }
+
+      delete node.next;
+      delete node.previous;
+
+      this._length--;
     }
 
     removeAt(position: number) {

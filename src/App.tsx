@@ -4,6 +4,7 @@ import './App.css';
 import logo from './logo.svg';
 
 import { BDoc, Editor } from './components'
+import { CharCode } from './objects/CharCodes';
 
 import { LinkedList, List } from './lib';
 import { Line, TextNode } from './objects/TextNodes';
@@ -76,7 +77,11 @@ const handleInput = (charCode: number) => {
   // tslint:disable-next-line:no-console
   console.log(letter);
   const line = userEditorState.line;
-  if(line.current) {
+
+  if (CharCode.Space === charCode) {
+    line.addSpace();
+  }
+  else if(line.current && line.current.kind === 'word') {
     const word = line.current;
     word.value += letter;
     word.length += letter.length;
@@ -97,7 +102,7 @@ window.onload =  ()=> {
   document.onkeydown = (e: KeyboardEvent) => {
     const { which } = e;
 
-    if(which === 8) {
+    if(CharCode.Backspace === which) {
       // tslint:disable-next-line:no-console
       console.log('backspace');
       const line = userEditorState.line;
